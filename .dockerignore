@@ -1,16 +1,13 @@
-# Ignore development dependencies
+# Ignore development dependencies and build artifacts
 node_modules
-
-# Ignore build output folder
 dist
 
-# Ignore version control
+# Ignore version control files
 .git
 .gitignore
 
-# Ignore local configuration files and sensitive info
-Dockerfile
-.dockerignore
-entrypoint.sh
-nginx.conf
+# Ignore documentation and local configs
 README.md
+vite.config.ts
+tsconfig.json
+metadata.json
