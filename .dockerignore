@@ -1,1 +1,16 @@
-�$z�╡��('��
+# Ignore development dependencies
+node_modules
+
+# Ignore build output folder
+dist
+
+# Ignore version control
+.git
+.gitignore
+
+# Ignore local configuration files and sensitive info
+Dockerfile
+.dockerignore
+entrypoint.sh
+nginx.conf
+README.md
