@@ -3,9 +3,10 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files and install dependencies using npm ci for faster, reliable builds
+# Copy package files and install dependencies
 COPY package.json ./
-RUN npm ci
+# Use 'npm install' because there is no package-lock.json file
+RUN npm install
 
 # Copy the rest of the application source code
 COPY . .
