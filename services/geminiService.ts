@@ -1,10 +1,19 @@
-
 import { GoogleGenAI } from "@google/genai";
 
-const API_KEY = process.env.API_KEY;
+// This is a global variable set by the config.js script
+// which is generated at container startup by entrypoint.sh
+declare global {
+  interface Window {
+    runtimeConfig: {
+      apiKey: string;
+    };
+  }
+}
+
+const API_KEY = window.runtimeConfig?.apiKey;
 
 if (!API_KEY) {
-    throw new Error("API_KEY environment variable is not set.");
+    throw new Error("API_KEY is not configured. It should be provided via a runtime config.");
 }
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
