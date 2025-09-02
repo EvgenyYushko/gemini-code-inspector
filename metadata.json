@@ -1,0 +1,5 @@
+{
+  "name": "Gemini Code Inspector",
+  "description": "An automated code review tool that uses the Gemini API to analyze code for bugs, performance issues, and style improvements, providing instant, expert feedback.",
+  "requestFramePermissions": []
+}
