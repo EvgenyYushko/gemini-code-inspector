@@ -1,5 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
-
 // This is a global variable set by the config.js script
 // which is generated at container startup by entrypoint.sh
 declare global {
@@ -16,11 +14,18 @@ if (!API_KEY) {
     throw new Error("API_KEY is not configured. It should be provided via a runtime config.");
 }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+// Define the expected structure of the JSON response from your proxy.
+interface GeminiProxyResponse {
+    candidates: Array<{
+        content: {
+            parts: Array<{
+                text: string;
+            }>;
+        };
+    }>;
+}
 
 export const reviewCode = async (code: string, language: string): Promise<string> => {
-  const model = 'gemini-2.5-flash';
-  
   const prompt = `
     You are an expert code reviewer with years of experience. Your task is to provide a comprehensive and constructive review of the following ${language} code.
 
@@ -41,14 +46,43 @@ export const reviewCode = async (code: string, language: string): Promise<string
     \`\`\`
   `;
 
+  const proxyUrl = `https://google-services-kdg8.onrender.com/api/gemini/generate?key=${API_KEY}`;
+  
+  const requestBody = {
+    contents: [{
+      parts: [{ "text": prompt }]
+    }]
+  };
+
   try {
-    const response = await ai.models.generateContent({
-        model: model,
-        contents: prompt
+    const response = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
     });
-    return response.text;
+
+    if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({ message: 'Could not parse error response.' }));
+        const errorMessage = errorBody?.error?.message || response.statusText;
+        throw new Error(`Proxy server returned an error: ${response.status} ${errorMessage}`);
+    }
+
+    const data: GeminiProxyResponse = await response.json();
+    
+    // Extract the text from the response, which mimics the structure of the native Gemini API response.
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (typeof text !== 'string') {
+        throw new Error("Invalid response structure from proxy server.");
+    }
+
+    return text;
   } catch (error) {
-    console.error("Error calling Gemini API:", error);
-    throw new Error("Failed to communicate with the Gemini API. Please check your connection and API key.");
+    console.error("Error calling proxy API:", error);
+    // Provide a more user-friendly error message
+    const friendlyMessage = error instanceof Error ? error.message : "An unknown network error occurred.";
+    throw new Error(`Failed to communicate with the proxy API. ${friendlyMessage}`);
   }
 };
